@@ -87,10 +87,10 @@ def train(num_epochs, unet, list_train,list_val,path_save_model):
 def start_training():
     #list_train = get_listData('Data/train/image', 'Data/train/mask', 8)
     #list_label = get_listData('Data/test/image', 'Data/test/mask', 8)
-    list_train,list_val = get_new_data(16)
+    list_train,list_val  = get_listData('Data/train/image', 'Data/train/mask', 16)
     model = unet2d.unet_2d(1, 1)
     model.cuda()
-    path = "test9.pth"
+    path = "test10.pth"
 
     train(800000, model, list_train, list_val, path)
 

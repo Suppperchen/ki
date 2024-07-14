@@ -111,15 +111,15 @@ class unet_2d(nn.Module):
 
         self.down4 = DoubleConv1(64, 128, 128)
 
-        self.down5 = DoubleConv1(128, 256, 256)
+        #self.down5 = DoubleConv1(128, 256, 256)
 
         #self.latent_space = DoubleConv1(1024, 1024, 1024)
 
         #self.up5 = Up_Conv_copy(1024, 1024)
         #self.up_conv5 = DoubleConv1(2048, 1024, 1024)
 
-        self.up4 = Up_Conv_copy(256, 128)
-        self.up_conv4 = DoubleConv1(256, 128, 128)
+        #self.up4 = Up_Conv_copy(256, 128)
+        #self.up_conv4 = DoubleConv1(256, 128, 128)
 
         self.up3 = Up_Conv_copy(128, 64)
         self.up_conv3 = DoubleConv1(128, 64, 64)
@@ -145,9 +145,9 @@ class unet_2d(nn.Module):
         output_down3_maxpooling = nn.MaxPool2d(2)(output_down3)
 
         output_down4 = self.down4(output_down3_maxpooling)
-        output_down4_maxpooling = nn.MaxPool2d(2)(output_down4)
+        #output_down4_maxpooling = nn.MaxPool2d(2)(output_down4)
 
-        output_down5 = self.down5(output_down4_maxpooling)
+        #output_down5 = self.down5(output_down4_maxpooling)
         #output_down5_maxpooling = nn.MaxPool2d(2)(output_down5)
 
         #output_latent_space = self.latent_space(output_down5_maxpooling)
@@ -155,10 +155,10 @@ class unet_2d(nn.Module):
         #output_up5 = self.up5(output_latent_space, output_down5)
         #output_up5_conv5 = self.up_conv5(output_up5)
 
-        output_up4 = self.up4(output_down5, output_down4)
-        output_up4_conv4 = self.up_conv4(output_up4)
+        #output_up4 = self.up4(output_down5, output_down4)
+        #output_up4_conv4 = self.up_conv4(output_up4)
 
-        output_up3 = self.up3(output_up4_conv4, output_down3)
+        output_up3 = self.up3(output_down4, output_down3)
         output_up3_conv3 = self.up_conv3(output_up3)
 
         output_up2 = self.up2(output_up3_conv3, output_down2)

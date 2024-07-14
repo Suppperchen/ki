@@ -17,39 +17,57 @@ def get_listData(path1, path2, batch):
     list_image = []
     arr = os.listdir(path1)
     for path in arr:
-        eachImgae = np.asarray(Image.open(path1 + '/'+path))
+        eachImgae = skimage.io.imread(path1 + '/'+path)
         eachImgae = preproImage(eachImgae,3)
-        list_image.append(eachImgae)
+        list_image = list_image + eachImgae
     list_label = []
     arr = os.listdir(path2)
     for path in arr:
 
-        eachlabel = np.asarray(Image.open(path2 + '/'+path))
+        eachlabel = skimage.io.imread(path2 + '/'+path)
         eachlabel = preproImage(eachlabel, 1)
 
-        list_label.append(eachlabel)
+        list_label = list_label + eachlabel
 
     #SEED = 448
     #random.seed(SEED)
     #random.shuffle(list_image)
     #random.shuffle(list_label)
-    list_image = batch_list(list_image, batch)
-    list_label = batch_list(list_label, batch)
 
-    #list_1 = zip(list_image[1:], list_label[1:])
-    #list_2 = zip(list_image[0:1], list_label[0:1])
+    image_dataset = np.array(list_image)
+    mask_dataset = np.array(list_label)
+    a = image_dataset.reshape((image_dataset.shape[0], 1, 64, 64))
+    b = mask_dataset.reshape((mask_dataset.shape[0], 1, 64, 64))
 
-    list_1 = zip(list_image, list_label)
+    x_train, x_test, y_train, y_test = train_test_split(a, b, test_size=0.3, random_state=0)
+    x_train = batch_numpy(x_train, batch)
+    x_test = batch_numpy(x_test, batch)
+    y_train = batch_numpy(y_train, batch)
+    y_test = batch_numpy(y_test, batch)
 
+    list_1 = zip(x_train, y_train)
+    list_2 = zip(x_test, y_test)
+    return list(list_1), list(list_2)
 
-    return list(list_1)
-    #return list(list_1), list(list_2)
 
 def preproImage(img,channel):
-    img = img.astype(float)
-    img = img / 255.0
-    img = np.reshape(img,(1,channel,512,512))
-    return img
+    if channel == 3:
+        img = img[:,:,1]
+        #img = clahe_equalized(img)
+
+    img = Image.fromarray(img)
+
+    img = np.array(img)
+    patches_img = patchify(img, (64, 64),
+                               step=64)
+    image_dataset =[]
+    for i in range(patches_img.shape[0]):
+        for j in range(patches_img.shape[1]):
+            single_patch_img = patches_img[i, j, :, :]
+            single_patch_img = (single_patch_img.astype('float32')) / 255.
+            image_dataset.append(single_patch_img)
+
+    return image_dataset
 
 
 
@@ -178,15 +196,13 @@ def get_new_testdata():
     path1 = 'C:/PycharmProjects/Retinal-Vessel-Segmentation-using-variants-of-UNET/test/image'
     path2 = 'C:/PycharmProjects/Retinal-Vessel-Segmentation-using-variants-of-UNET/test/mask'
 
-    path1 = 'C:/PycharmProjects/Retinal-Vessel-Segmentation-using-variants-of-UNET/images'  # training images directory
-    path2 = 'C:/PycharmProjects/Retinal-Vessel-Segmentation-using-variants-of-UNET/manual1'  # training masks directory
 
     image_dataset = []
     mask_dataset = []
 
     patch_size = 512
 
-    images = sorted(os.listdir(path1))  # 45 images (2336,3504), SIZE_X  = 2048, SIZE_Y = 3072
+    images = sorted(os.listdir(path1))
     for i, image_name in enumerate(images):
         a = singel_image_preprocessing(image_name, path1, patch_size)
         a = np.array(a)
@@ -206,15 +222,11 @@ def get_new_testdata():
 
 def convert_back(image):
     list_image = []
-    for i in range(4):
+    for i in range(8):
         list_summe = []
-        for j in range(6):
-            list_summe.append(image[i*6+j,0,:,:])
+        for j in range(8):
+            list_summe.append(image[i*8+j,0,:,:])
         list_image.append(np.concatenate(list_summe, axis=1))
 
     return np.concatenate(list_image)
-
-
-
-
 

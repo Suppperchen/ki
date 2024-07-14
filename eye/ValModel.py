@@ -4,8 +4,9 @@ from PIL import Image
 import numpy as np
 from torch.autograd import Variable
 from matplotlib import pyplot as plt
-from loaddata import get_listData, get_new_data, singel_image_preprocessing, get_new_testdata,convert_back
+from loaddata import get_listData, get_new_data, singel_image_preprocessing, get_new_testdata, convert_back, preproImage
 import diceloss
+import skimage.io
 def val(a,b):
 
 
@@ -54,8 +55,8 @@ def show_singel_result():
 
 
 def show_image_mask():
-    list_train,list_label = get_new_data(16)
-    #list_train = get_listData('Data/test/image', 'Data/test/mask', 1)
+    #list_train,list_label = get_new_data(16)
+    list_train ,list_label= get_listData('Data/train/image', 'Data/train/mask', 16)
     print(len(list_train))
     print(len(list_label))
     a,b = list_train[44]
@@ -66,8 +67,8 @@ def show_image_mask():
         for j in range(a.shape[0]):
             plt.figure()
             f, axarr = plt.subplots(2, 1)
-            axarr[0].imshow(b[j,:,:,:].reshape(512, 512), cmap='gray')
-            axarr[1].imshow(a[j,:,:,:].reshape(512, 512), cmap='gray')
+            axarr[0].imshow(b[j,:,:,:].reshape(b.shape[2], b.shape[2]), cmap='gray')
+            axarr[1].imshow(a[j,:,:,:].reshape(b.shape[2], b.shape[2]), cmap='gray')
             plt.show()
 
 
@@ -99,4 +100,40 @@ def test_show_result():
     axarr[2].imshow(convert_back(a), cmap='gray')
     plt.show()
 
-test_show_result()
+def test():
+    eachImgae = skimage.io.imread('Data/test/image/1.png')
+    eachImgae = preproImage(eachImgae, 3)
+
+    eachlabel = skimage.io.imread('Data/test/mask/1.png')
+    eachlabel = preproImage(eachlabel, 1)
+
+    image_dataset = np.array(eachImgae)
+    mask_dataset = np.array(eachlabel)
+    a = image_dataset.reshape((image_dataset.shape[0], 1, 64, 64))
+    b = mask_dataset.reshape((mask_dataset.shape[0], 1, 64, 64))
+
+    with torch.no_grad():
+        data = Variable(torch.Tensor(a))
+        data = data.cuda()
+
+        mask = Variable(torch.Tensor(b))
+        mask = mask.cuda()
+
+        unet = unet_2d(1, 1)
+        unet.cuda()
+        unet.load_state_dict(torch.load('test10.pth'))
+        out = unet(data)
+        print(out.size())
+        print(diceloss.DiceLoss()(out,mask))
+
+    np_data = out.cpu().data.numpy()
+
+    plt.figure()
+    f, axarr = plt.subplots(3, 1)
+    axarr[0].imshow(convert_back(np_data), cmap='gray')
+    axarr[1].imshow(convert_back(b), cmap='gray')
+    axarr[2].imshow(convert_back(a), cmap='gray')
+    plt.show()
+
+
+show_image_mask()
