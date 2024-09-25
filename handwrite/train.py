@@ -1,22 +1,21 @@
+import torchvision
+import torchvision.transforms as transforms
+from torch.utils.data import DataLoader
 from torch import optim
-import torch
 import math
+import torch
+import torch.nn as nn
 from torch.autograd import Variable
-import diceloss
-import unet2d
-from loaddata import get_listData
+import model
 
 
-def train(num_epochs, unet, list_train,list_val,path_save_model):
+def train(num_epochs, cnn_model, list_train, list_val, path_save_model):
 
-    unet.train()
-
+    cnn_model.train()
     #unet.load_state_dict(torch.load('eye.pth'))
-
-    optimizer = optim.Adam(unet.parameters(), lr=0.001)
+    optimizer = optim.Adam(cnn_model.parameters(), lr=0.001)
     #loss_func = nn.L1Loss()
-    #loss_func = nn.MSELoss()
-    loss_func = diceloss.DiceLoss()
+    loss_func = nn.CrossEntropyLoss()
     loss_update = math.inf
     for epoch in range(num_epochs):
         loss_summe = 0
@@ -32,7 +31,7 @@ def train(num_epochs, unet, list_train,list_val,path_save_model):
 
 
 
-            output = unet(images_train)
+            output = cnn_model(images_train)
             loss = loss_func(output, labels_train)
 
             loss.backward()
@@ -55,7 +54,7 @@ def train(num_epochs, unet, list_train,list_val,path_save_model):
              labels_val = Variable(torch.Tensor(labels_val))
              labels_val =labels_val.cuda()
 
-             output = unet(images_val)
+             output = cnn_model(images_val)
              loss_val = loss_func(output, labels_val)
 
 
@@ -69,7 +68,7 @@ def train(num_epochs, unet, list_train,list_val,path_save_model):
 
 
          if loss_summe_val<loss_update:
-              torch.save(unet.state_dict(), path_save_model)
+              torch.save(cnn_model.state_dict(), path_save_model)
               print('model saving in Epoch [{}/{}], val_Loss:{:.4f}'.
                      format(epoch + 1, num_epochs, loss_summe_val))
               loss_update = loss_summe_val
@@ -81,17 +80,36 @@ def train(num_epochs, unet, list_train,list_val,path_save_model):
 
     pass
 
+if __name__ == "__main__":
+    batch_size = 1
+    #128, do later
 
-def start_training():
+    transform = transforms.Compose(
+        [transforms.ToTensor(),
+         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+    trainset = torchvision.datasets.MNIST(root='./data', train=True, transform=transforms.ToTensor())
+    train_dataloader = DataLoader(trainset, batch_size=batch_size, shuffle=True)
 
-    list_train,list_val  = get_listData('Data/train/image', 'Data/train/mask', 4)
-
-    model = unet2d.unet_2d(1, 1)
+    model = model.cnnSimple()
     model.cuda()
-    path = "eye.pth"
-
-    train(800000, model, list_train, list_val, path)
 
 
+    list1 = []
+    list2 = []
+    for batch_idx, samples in enumerate(train_dataloader):
+        nurForVal = (60000 / batch_size)*5/6
+        if batch_idx>nurForVal:
+            list2.append(samples)
+        else:
+            list1.append(samples)
 
-start_training()
+
+    train(2020,model,list1,list2,"test1.pth")
+
+
+
+
+
+
+
+

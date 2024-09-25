@@ -4,7 +4,7 @@ from PIL import Image
 import numpy as np
 from torch.autograd import Variable
 from matplotlib import pyplot as plt
-from loaddata import get_listData, get_new_data, singel_image_preprocessing, get_new_testdata, convert_back, preproImage
+from loaddata import get_listData, get_new_data, get_new_testdata, convert_back, preproImage_test
 import diceloss
 import skimage.io
 def val(a,b):
@@ -101,16 +101,16 @@ def test_show_result():
     plt.show()
 
 def test():
-    eachImgae = skimage.io.imread('Data/test/image/1.png')
-    eachImgae = preproImage(eachImgae, 3)
+    eachImgae = skimage.io.imread('Data/test/image/15.png')
+    eachImgae = preproImage_test(eachImgae, 3)
 
-    eachlabel = skimage.io.imread('Data/test/mask/1.png')
-    eachlabel = preproImage(eachlabel, 1)
+    eachlabel = skimage.io.imread('Data/test/mask/15.png')
+    eachlabel = preproImage_test(eachlabel, 1)
 
     image_dataset = np.array(eachImgae)
     mask_dataset = np.array(eachlabel)
-    a = image_dataset.reshape((image_dataset.shape[0], 1, 64, 64))
-    b = mask_dataset.reshape((mask_dataset.shape[0], 1, 64, 64))
+    a = image_dataset.reshape((image_dataset.shape[0], 1, 512, 512))
+    b = mask_dataset.reshape((mask_dataset.shape[0], 1, 512, 512))
 
     with torch.no_grad():
         data = Variable(torch.Tensor(a))
@@ -121,7 +121,7 @@ def test():
 
         unet = unet_2d(1, 1)
         unet.cuda()
-        unet.load_state_dict(torch.load('test10.pth'))
+        unet.load_state_dict(torch.load('test13.pth'))
         out = unet(data)
         print(out.size())
         print(diceloss.DiceLoss()(out,mask))
@@ -130,10 +130,10 @@ def test():
 
     plt.figure()
     f, axarr = plt.subplots(3, 1)
-    axarr[0].imshow(convert_back(np_data), cmap='gray')
-    axarr[1].imshow(convert_back(b), cmap='gray')
-    axarr[2].imshow(convert_back(a), cmap='gray')
+    axarr[0].imshow(np_data.reshape(512,512), cmap='gray')
+    axarr[1].imshow(b.reshape(512,512), cmap='gray')
+    axarr[2].imshow(a.reshape(512,512), cmap='gray')
     plt.show()
 
 
-show_image_mask()
+test()

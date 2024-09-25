@@ -1,22 +1,18 @@
-from torch import optim
-import torch
-import math
-from torch.autograd import Variable
-import diceloss
 import unet2d
-from loaddata import get_listData
-
+from torch import optim
+import math
+import torch
+import torch.nn as nn
+from torch.autograd import Variable
+import loaddata
 
 def train(num_epochs, unet, list_train,list_val,path_save_model):
 
     unet.train()
-
     #unet.load_state_dict(torch.load('eye.pth'))
-
     optimizer = optim.Adam(unet.parameters(), lr=0.001)
     #loss_func = nn.L1Loss()
-    #loss_func = nn.MSELoss()
-    loss_func = diceloss.DiceLoss()
+    loss_func = nn.MSELoss()
     loss_update = math.inf
     for epoch in range(num_epochs):
         loss_summe = 0
@@ -81,17 +77,27 @@ def train(num_epochs, unet, list_train,list_val,path_save_model):
 
     pass
 
+if __name__ == "__main__":
+    list = [0, 1, 2, 4, 7, 8, 9, 10, 12, 13]
+    list_val = [3, 11]
+    batchsize = 5
+    # list_test = [5,6,14,15]
 
-def start_training():
-
-    list_train,list_val  = get_listData('Data/train/image', 'Data/train/mask', 4)
+    data_train, label_train = loaddata.get_alldata(list)
+    data_val, label_val = loaddata.get_alldata(list_val)
+    train_list = loaddata.change_data_asList(data_train, label_train, batchsize)
+    val_list = loaddata.change_data_asList(data_val, label_val, batchsize)
 
     model = unet2d.unet_2d(1, 1)
     model.cuda()
-    path = "eye.pth"
+    path = "test1.pth"
 
-    train(800000, model, list_train, list_val, path)
+    a,b = train_list[0]
+    print(a.shape)
+
+    #train(800, model, train_list, val_list, path)
 
 
 
-start_training()
+
+

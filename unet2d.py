@@ -103,34 +103,34 @@ class Output(nn.Module):
 class unet_2d(nn.Module):
     def __init__(self, in_channels, out_channels):
         super(unet_2d, self).__init__()
-        self.down1 = DoubleConv1(in_channels, 16, 16)
+        self.down1 = DoubleConv1(in_channels, 64,64)#16,16
 
-        self.down2 = DoubleConv1(16, 32, 32)
+        self.down2 = DoubleConv1(64,128,128)#16,32,32
 
-        self.down3 = DoubleConv1(32, 64, 64)
+        self.down3 = DoubleConv1(128, 256, 256)#32,64,64
 
-        self.down4 = DoubleConv1(64, 128, 128)
+        self.down4 = DoubleConv1(256, 512, 512)#64,128,128
 
-        #self.down5 = DoubleConv1(128, 256, 256)
+        self.down5 = DoubleConv1(512, 1024, 1024)
 
-        #self.latent_space = DoubleConv1(1024, 1024, 1024)
+        self.latent_space = DoubleConv1(1024, 1024, 1024)
 
-        #self.up5 = Up_Conv_copy(1024, 1024)
-        #self.up_conv5 = DoubleConv1(2048, 1024, 1024)
+        self.up5 = Up_Conv_copy(1024, 1024)
+        self.up_conv5 = DoubleConv1(2048, 1024, 1024)
 
-        #self.up4 = Up_Conv_copy(256, 128)
-        #self.up_conv4 = DoubleConv1(256, 128, 128)
+        self.up4 = Up_Conv_copy(1024,512)
+        self.up_conv4 = DoubleConv1(1024,512,512)
 
-        self.up3 = Up_Conv_copy(128, 64)
-        self.up_conv3 = DoubleConv1(128, 64, 64)
+        self.up3 = Up_Conv_copy(512, 256)#128,64
+        self.up_conv3 = DoubleConv1(512, 256, 256)#128,64,64
 
-        self.up2 = Up_Conv_copy(64, 32)
-        self.up_conv2 = DoubleConv1(64, 32, 32)
+        self.up2 = Up_Conv_copy(256, 128)#64,32
+        self.up_conv2 = DoubleConv1(256, 128, 128)#64,32,32
 
-        self.up1 = Up_Conv_copy(32, 16)
-        self.up_conv1 = DoubleConv1(32, 16, 16)
+        self.up1 = Up_Conv_copy(128, 64)#32,16
+        self.up_conv1 = DoubleConv1(128, 64, 64)#32,16,16
 
-        self.out = Output(16, out_channels)
+        self.out = Output(64, out_channels)#16
 
 
 
@@ -145,20 +145,20 @@ class unet_2d(nn.Module):
         output_down3_maxpooling = nn.MaxPool2d(2)(output_down3)
 
         output_down4 = self.down4(output_down3_maxpooling)
-        #output_down4_maxpooling = nn.MaxPool2d(2)(output_down4)
+        output_down4_maxpooling = nn.MaxPool2d(2)(output_down4)
 
-        #output_down5 = self.down5(output_down4_maxpooling)
-        #output_down5_maxpooling = nn.MaxPool2d(2)(output_down5)
+        output_down5 = self.down5(output_down4_maxpooling)
+        output_down5_maxpooling = nn.MaxPool2d(2)(output_down5)
 
-        #output_latent_space = self.latent_space(output_down5_maxpooling)
+        output_latent_space = self.latent_space(output_down5_maxpooling)
 
-        #output_up5 = self.up5(output_latent_space, output_down5)
-        #output_up5_conv5 = self.up_conv5(output_up5)
+        output_up5 = self.up5(output_latent_space, output_down5)
+        output_up5_conv5 = self.up_conv5(output_up5)
 
-        #output_up4 = self.up4(output_down5, output_down4)
-        #output_up4_conv4 = self.up_conv4(output_up4)
+        output_up4 = self.up4(output_up5_conv5, output_down4)
+        output_up4_conv4 = self.up_conv4(output_up4)
 
-        output_up3 = self.up3(output_down4, output_down3)
+        output_up3 = self.up3(output_up4_conv4, output_down3)
         output_up3_conv3 = self.up_conv3(output_up3)
 
         output_up2 = self.up2(output_up3_conv3, output_down2)
@@ -172,8 +172,8 @@ class unet_2d(nn.Module):
         return out
 
 if __name__ == "__main__":
-    model = unet_2d(3, 1)
+    model = unet_2d(1, 1)
     model.cuda()
-    summary(model, (3, 512, 512))
+    summary(model, (1, 512, 512))
 
 

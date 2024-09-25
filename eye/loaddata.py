@@ -18,14 +18,14 @@ def get_listData(path1, path2, batch):
     arr = os.listdir(path1)
     for path in arr:
         eachImgae = skimage.io.imread(path1 + '/'+path)
-        eachImgae = preproImage(eachImgae,3)
+        eachImgae = preproImage_test(eachImgae,3)
         list_image = list_image + eachImgae
     list_label = []
     arr = os.listdir(path2)
     for path in arr:
 
         eachlabel = skimage.io.imread(path2 + '/'+path)
-        eachlabel = preproImage(eachlabel, 1)
+        eachlabel = preproImage_test(eachlabel, 1)
 
         list_label = list_label + eachlabel
 
@@ -36,10 +36,19 @@ def get_listData(path1, path2, batch):
 
     image_dataset = np.array(list_image)
     mask_dataset = np.array(list_label)
-    a = image_dataset.reshape((image_dataset.shape[0], 1, 64, 64))
-    b = mask_dataset.reshape((mask_dataset.shape[0], 1, 64, 64))
+    a = image_dataset.reshape((image_dataset.shape[0], 1, 512, 512))
+    b = mask_dataset.reshape((mask_dataset.shape[0], 1, 512, 512))
 
-    x_train, x_test, y_train, y_test = train_test_split(a, b, test_size=0.3, random_state=0)
+
+    #x_train, x_test, y_train, y_test = train_test_split(a, b, test_size=0.3, random_state=0)
+
+    x_train = a[0:56,:,:,:]
+    x_test = a[56:80,:,:,:]
+    y_train = b[0:56,:,:,:]
+    y_test = b[56:80,:,:,:]
+
+
+
     x_train = batch_numpy(x_train, batch)
     x_test = batch_numpy(x_test, batch)
     y_train = batch_numpy(y_train, batch)
@@ -49,7 +58,7 @@ def get_listData(path1, path2, batch):
     list_2 = zip(x_test, y_test)
     return list(list_1), list(list_2)
 
-
+#no use
 def preproImage(img,channel):
     if channel == 3:
         img = img[:,:,1]
@@ -70,27 +79,23 @@ def preproImage(img,channel):
     return image_dataset
 
 
+def preproImage_test(img,channel):
+    if channel == 3:
+        img = img[:,:,1]
+        #img = clahe_equalized(img)
 
-def batch_list(list, batchsize):
+    img = Image.fromarray(img)
 
-    list_new = []
-    length = len(list)
-    if length % batchsize == 0:
-        loop = int(length / batchsize)
-    else:
-        loop = int(length / batchsize) + 1
+    img = np.array(img)
+    img = (img.astype('float32'))/255
 
-    for i in range(loop):
-        if i == loop - 1:
-            list_new.append(np.concatenate(list[i * batchsize:]))
-        else:
-            list_new.append(np.concatenate(list[i * batchsize:(i+1) * batchsize]))
-
-    return list_new
+    return [img]
 
 
 
-########################try with new data
+
+
+########################try with new data, no use
 def clahe_equalized(imgs):
     clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
     imgs_equalized = clahe.apply(imgs)
@@ -134,7 +139,7 @@ def singel_image_preprocessing(image_name,path1,patch_size):
                 single_patch_mask = (single_patch_mask.astype('float32')) / 255.
                 image_dataset.append(single_patch_mask)
         return image_dataset
-
+#no use
 def get_new_data(batch):
     path1 = 'C:/PycharmProjects/Retinal-Vessel-Segmentation-using-variants-of-UNET/images'  # training images directory
     path2 = 'C:/PycharmProjects/Retinal-Vessel-Segmentation-using-variants-of-UNET/manual1'  # training masks directory
@@ -191,7 +196,7 @@ def batch_numpy(numpy, batchsize):
 
 
 
-
+#no use
 def get_new_testdata():
     path1 = 'C:/PycharmProjects/Retinal-Vessel-Segmentation-using-variants-of-UNET/test/image'
     path2 = 'C:/PycharmProjects/Retinal-Vessel-Segmentation-using-variants-of-UNET/test/mask'
@@ -220,6 +225,7 @@ def get_new_testdata():
     return image_dataset,mask_dataset
 
 
+#no use
 def convert_back(image):
     list_image = []
     for i in range(8):
