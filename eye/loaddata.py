@@ -1,9 +1,6 @@
 from PIL import Image
 import numpy as np
 import os
-import random
-import os
-from matplotlib import pyplot as plt
 from sklearn.model_selection import train_test_split
 import cv2
 import skimage.io
@@ -40,7 +37,7 @@ def get_listData(path1, path2, batch):
     b = mask_dataset.reshape((mask_dataset.shape[0], 1, 512, 512))
 
 
-    #x_train, x_test, y_train, y_test = train_test_split(a, b, test_size=0.3, random_state=0)
+
 
     x_train = a[0:56,:,:,:]
     x_test = a[56:80,:,:,:]

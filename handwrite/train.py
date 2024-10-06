@@ -1,18 +1,17 @@
-import torchvision
-import torchvision.transforms as transforms
-from torch.utils.data import DataLoader
+
 from torch import optim
 import math
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
 import model
+from loaddata import get_data_mnist
 
 
 def train(num_epochs, cnn_model, list_train, list_val, path_save_model):
 
     cnn_model.train()
-    #unet.load_state_dict(torch.load('eye.pth'))
+    #cnn_model.load_state_dict(torch.load('test.pth'))
     optimizer = optim.Adam(cnn_model.parameters(), lr=0.001)
     #loss_func = nn.L1Loss()
     loss_func = nn.CrossEntropyLoss()
@@ -27,6 +26,7 @@ def train(num_epochs, cnn_model, list_train, list_val, path_save_model):
             images_train = Variable(torch.Tensor(images_train))
             images_train =images_train.cuda()
             labels_train = Variable(torch.Tensor(labels_train))
+            #labels_train = Variable(torch.Tensor(labels_train).type(torch.int64))
             labels_train =labels_train.cuda()
 
 
@@ -51,7 +51,8 @@ def train(num_epochs, cnn_model, list_train, list_val, path_save_model):
              images_val,labels_val= data_label
              images_val = Variable(torch.Tensor(images_val))
              images_val =images_val.cuda()
-             labels_val = Variable(torch.Tensor(labels_val))
+             #labels_val = Variable(torch.Tensor(labels_val).type(torch.int64))
+             labels_val = Variable(torch.Tensor(labels_val).type(torch.int64))
              labels_val =labels_val.cuda()
 
              output = cnn_model(images_val)
@@ -81,30 +82,13 @@ def train(num_epochs, cnn_model, list_train, list_val, path_save_model):
     pass
 
 if __name__ == "__main__":
-    batch_size = 1
-    #128, do later
-
-    transform = transforms.Compose(
-        [transforms.ToTensor(),
-         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-    trainset = torchvision.datasets.MNIST(root='./data', train=True, transform=transforms.ToTensor())
-    train_dataloader = DataLoader(trainset, batch_size=batch_size, shuffle=True)
-
+    list1,list2 = get_data_mnist()
     model = model.cnnSimple()
     model.cuda()
 
 
-    list1 = []
-    list2 = []
-    for batch_idx, samples in enumerate(train_dataloader):
-        nurForVal = (60000 / batch_size)*5/6
-        if batch_idx>nurForVal:
-            list2.append(samples)
-        else:
-            list1.append(samples)
 
-
-    train(2020,model,list1,list2,"test1.pth")
+    train(2000,model,list1,list2,"test_without_transform.pth")
 
 
 

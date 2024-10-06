@@ -90,12 +90,12 @@ if __name__ == "__main__":
 
     model = unet2d.unet_2d(1, 1)
     model.cuda()
-    path = "test1.pth"
+    path = "ct.pth"
 
     a,b = train_list[0]
     print(a.shape)
 
-    #train(800, model, train_list, val_list, path)
+    train(80000, model, train_list, val_list, path)
 
 
 

@@ -5,6 +5,7 @@ from matplotlib import pyplot as plt
 import torchvision
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
+import numpy as np
 def show_out_Image(data_np,lable_np,path):
 
     with torch.no_grad():
@@ -21,13 +22,21 @@ def show_out_Image(data_np,lable_np,path):
     #np_data = out.cpu().data.numpy()
 
     print(lable_np)
-    print(out)
-    plt.imshow(data_np[15,:,:,:].reshape(28,28), cmap='gray')
-    plt.show()
+    print(out.indices)
+    for i in range(lable_np.shape[0]):
+        if lable_np[i] == 1:
+            print(out.indices[i])
+            plt.imshow(data_np[i, :, :, :].reshape(28, 28), cmap='gray')
+            plt.show()
+
+
+
 
     return
 
 if __name__ == "__main__":
+
+
     batch_size = 64
     # 128, do later
 

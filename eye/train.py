@@ -84,7 +84,7 @@ def train(num_epochs, unet, list_train,list_val,path_save_model):
 
 def start_training():
 
-    list_train,list_val  = get_listData('Data/train/image', 'Data/train/mask', 4)
+    list_train,list_val  = get_listData('Data/train/image', 'Data/train/mask', 1)
 
     model = unet2d.unet_2d(1, 1)
     model.cuda()
