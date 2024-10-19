@@ -11,7 +11,7 @@ from flask_cors import CORS
 from matplotlib import pyplot as plt
 import cv2
 from torchvision.transforms import v2
-from skimage.transform import rescale,resize,rotate
+from skimage.transform import rotate
 
 app = Flask(__name__)
 CORS(app)
@@ -88,7 +88,7 @@ def handwrite():
         cnnmini = cnnSimple()
         cnnmini.eval()
         cnnmini.cuda()
-        cnnmini.load_state_dict(torch.load('handwrite/test_without_transform.pth'))
+        cnnmini.load_state_dict(torch.load('handwrite/test.pth'))
         out = cnnmini(data)
 
 
@@ -110,7 +110,6 @@ def post_retinal_vessel():
     img_numpy = img_numpy / 255
     img_numpy = img_numpy[:,:,1]
     img_numpy = np.reshape(img_numpy, (1, 1, 512, 512))
-    print(img_numpy.shape)
 
     with torch.no_grad():
         data = Variable(torch.Tensor(img_numpy))
@@ -146,9 +145,8 @@ def post_ct():
 
     img_numpy = np_img.astype(float)
     img_numpy = img_numpy / 255
-    img_numpy = img_numpy[:,:,1]
+    #img_numpy = img_numpy[:,:,1]
     img_numpy = np.reshape(img_numpy, (1, 1, 256, 256))
-    print(img_numpy.shape)
 
     with torch.no_grad():
         data = Variable(torch.Tensor(img_numpy))

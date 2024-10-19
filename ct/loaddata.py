@@ -1,6 +1,6 @@
 import SimpleITK as sitk
 import numpy as np
-
+from PIL import Image
 def load_data(path_mr,path_ct,path_mask):
 
     inputImage_mr = sitk.ReadImage(path_mr)
@@ -77,3 +77,67 @@ def change_data_asList(data,label,batchsize):
         index_last = (i+1)*batchsize
         list.append((data[index_first:index_last,:,:,:],label[index_first:index_last,:,:,:]))
     return list
+
+def createpngData(image,image_mask,image_label,indexNur):
+
+    image = sitk.ReadImage(image)
+    image = sitk.GetArrayFromImage(image)
+    image = image.astype(dtype=np.float32)
+
+
+    image_mask = sitk.ReadImage(image_mask)
+    image_mask = sitk.GetArrayFromImage(image_mask)
+    image_mask = image_mask.astype(dtype=np.float32)
+
+    image_label = sitk.ReadImage(image_label)
+    image_label = sitk.GetArrayFromImage(image_label)
+    image_label = image_label.astype(dtype=np.float32)
+
+    image = image - np.amin(image)
+    image = image * image_mask
+    image = image / 4095
+
+    image_label = image_label - np.amin(image_label)
+    image_label = image_label * image_mask
+    image_label = image_label / 4095
+
+
+
+    image = image*255
+    image = image.astype(np.uint8)
+
+    image_label = image_label * 255
+    image_label = image_label.astype(np.uint8)
+
+    for i in range(image.shape[0]):
+        save = Image.fromarray(image[i,:,:])
+        save.save('creatPNG/val/data/MRT'+indexNur+'_' + str(i) + '.png')
+
+        save = Image.fromarray(image_label[i, :, :])
+        save.save('creatPNG/val/label/MRT'+indexNur+'_' + str(i) + '.png')
+
+
+
+
+
+
+    return
+
+
+if __name__ == "__main__":
+
+    # list = [0, 1, 2, 4, 7, 8, 9, 10, 12, 13]
+    # list = [5,6,14,15]
+    #list = [3, 11]
+
+    # for i in list:
+    #     path_ct = 'data_ct/new_ct/' + str(i) + '.gipl'
+    #     path_mr = 'data_ct/new_mr/' + str(i) + '.gipl'
+    #     path_mask = 'data_ct/mask_drop/' + str(i) + '.gipl'
+    #     createpngData(path_mr, path_mask, path_ct, str(i))
+
+    for i in range(10):
+        print(i)
+        i = i+3
+        print(i)
+
